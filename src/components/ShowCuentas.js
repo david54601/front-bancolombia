@@ -25,6 +25,7 @@ const ShowCuentas = () => {
 
     
     useEffect( ()=>{
+        
         getCuentas();
     },[]);
 
@@ -157,7 +158,7 @@ const ShowCuentas = () => {
                         </button>
                     </div> 
                     <div className='col-md-3 offset-md-3  d-grid mx-auto'>
-                        <button onClick={redireccionarACrearMovimiento}  className='btn btn-dark' data-bs-toggle='modal' data-bs-target='#modalcuenta'>
+                        <button onClick={redireccionarACrearMovimiento}  className='btn btn-dark' >
                             <i className='fa-solid fa-circle-plus'></i> crear Movimiento
                         </button>
                     </div>
@@ -227,7 +228,7 @@ const ShowCuentas = () => {
                         <input type='hidden' id='id'></input>
                         <div className='input-group mb-3'>
                             <span className='input-group-text'><i className='fa-solid fa-gift'></i></span>
-                            <input type='text' id='titular' className='form-control' placeholder='Titual' value={titular}
+                            <input type='text' id='titular' className='form-control' placeholder='Titular' value={titular}
                             onChange={(e)=> setTitular(e.target.value)}></input>
                         </div>
                         <div className='input-group mb-3'>

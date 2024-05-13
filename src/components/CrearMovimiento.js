@@ -11,7 +11,8 @@ const CrearMovimiento = () => {
     const navigate = useNavigate();
 
     const editUrl = `${url}/editar/`;
-    const [movimientos,setMovimientos]= useState([]);
+    const [movimientos,setMovimientos]= useState();
+
     const [id,setId]= useState('');
     const [dcto,setDcto]= useState();
     const [tasaInteres,setTasaInteres]= useState();
@@ -20,24 +21,37 @@ const CrearMovimiento = () => {
     const [total,SetTotal]= useState('');
     const [fecha,setFecha]=useState('');
     const [tipoTransaccion,setTipoTransaccion]= useState();
-    const [metodoPago,setMetodoPago]= useState('');
+
     const[tipo_pago,setTipoPago]=useState('');
     const [cuentas,setCuentas]= useState([]);
     const [operacion,SetOperacion]= useState('1');
-    const [estado,setEstado]= useState('');
     const [title,setTitle]= useState('');
+    const [selectedCuenta, setSelectedCuenta] = useState('');
+
 
    
     useEffect( ()=>{
-        //getCuentas();
+        getCuentas();
         getMovimientos();
     },[]);
 
+   const getCuentas = async () => {
+    try {
+        const respuesta = await axios.get('http://localhost:8080/api/v1/cuentas');
+        setCuentas(respuesta.data);
+    } catch (error) {
+        console.error('Error al obtener las cuentas:', error);
+    }
+};
     
     const getMovimientos = async () => {
-        const respuesta = await axios.get(url);
-        setCuentas(respuesta.data);
-    }
+        try {
+            const respuesta = await axios.get(url);
+            setMovimientos(respuesta.data); // Asignar los datos al estado movimientos
+        } catch (error) {
+            console.error("Error al obtener los movimientos:", error);
+        }
+    };
 
     const redireccionarACrearMovimiento = () => {
         navigate('/'); // Redirige al usuario al nuevo componente
@@ -49,7 +63,7 @@ const CrearMovimiento = () => {
       };
     
 
-      const openModal = (op,id,dcto,tasaInteres, descripcion, valor,total,fecha,tipoTransaccion,metodoPago,tipo_pago) =>{
+      const openModalMovimiento = (op,id,dcto,tasaInteres, descripcion, valor,total,fecha,tipoTransaccion) =>{
       setMovimientos('');
         setDescripcion('');
         setDcto('');
@@ -58,7 +72,6 @@ const CrearMovimiento = () => {
         setValor();
         setFecha();
         setTipoTransaccion('');
-        setMetodoPago('');
         setTipoPago('');
         setTasaInteres('');
         setCuentas('');
@@ -73,7 +86,7 @@ const CrearMovimiento = () => {
   //           const editUrl = `${url}/editar/${id}`;
 
         setId(id);
-  setMovimientos(dcto);
+  setMovimientos(movimientos);
   setDescripcion(descripcion);
   setDcto(dcto);
   setValor(valor);
@@ -82,8 +95,7 @@ const CrearMovimiento = () => {
   setFecha(fecha);
   setTasaInteres(tasaInteres);
   setTipoTransaccion(tipoTransaccion);
-  setMetodoPago(metodoPago);
-  setMetodoPago(tipo_pago);
+  
   
   SetOperacion(op);
 
@@ -93,49 +105,52 @@ const CrearMovimiento = () => {
         },500);
     }
 
-    const validar = () => {
-        var parametros;
+    const validarMovimientos = () => {
+        var parametros = {}; // Declaración de parametros aquí
         var metodo;
-        if(dcto.trim() === ''){
-            show_alert('Escribe el tipo de movimiento','warning');
-        }
-        else if(descripcion.trim() === ''){
-            show_alert('Escribe la descripciona','warning');
-        }
-        else if(dcto === ''){
-            show_alert('Escribe el descuento','warning');
-        }
-        else if(valor === ''){
-            show_alert('Escribe el valor ','warning');
-        }
-        else if(total === ''){
-            show_alert('Escribe total','warning');
-        }
-        else if(valor === ''){
-          show_alert('Escribe la valor','warning');
-      }
-      else if(fecha === ''){
-        show_alert('seleccionar una fecha','warning');
-    }
-        else if(tipoTransaccion === ''){
-            show_alert('Escribe tipo de transaccion','warning');
-        }
-        else if(metodoPago === ''){
-            show_alert('Escribe el metodo de pago','warning');
-        }
-        else{
-            if(operacion === 1){
-              
-                metodo= 'POST';
+        
+        if (dcto.trim() === '') {
+            show_alert('Escribe el tipo de movimiento', 'warning');
+        } else if (descripcion.trim() === '') {
+            show_alert('Escribe la descripciona', 'warning');
+        } else if (dcto === '') {
+            show_alert('Escribe el descuento', 'warning');
+        } else if (valor === '') {
+            show_alert('Escribe el valor', 'warning');
+        } else if (total === '') {
+            show_alert('Escribe total', 'warning');
+        } else if (valor === '') {
+            show_alert('Escribe la valor', 'warning');
+        } else if (fecha === '') {
+            show_alert('Selecciona una fecha', 'warning');
+        } else if (tipoTransaccion === '') {
+            show_alert('Escribe tipo de transaccion', 'warning');
+        } else {
+            // Definir parametros independientemente de la operación
+            parametros = {
+                dcto: dcto.trim(),
+                tasaInteres: tasaInteres.trim(),
+                descripcion: descripcion.trim(),
+                valor: valor.trim(),
+                total: total.trim(),
+                fecha: fecha,
+                tipoTransaccion: tipoTransaccion.trim(),
+                tipo_pago: tipo_pago.trim()
+                
+            };
+    
+            if (operacion === 1) {
+                metodo = 'POST';
+            } else {
+                // Si es una operación de edición, también necesitas incluir el ID
+                parametros.id = id; // Asegúrate de que el ID esté incluido en los parámetros
+                metodo = 'PUT';
             }
-            else{
-
-              parametros= {dcto:dcto.trim(),tasaInteres:tasaInteres.trim(),descripcion:descripcion.trim(),dcto:dcto.trim(),valor:valor.trim(),valor: valor,fecha: fecha,tipoTransaccion: tipoTransaccion.trim(),metodoPago: metodoPago.trim(),tipo_pago:tipo_pago.trim()};
-                metodo= 'PUT';
-            }
-            envarSolicitud(metodo,parametros);
+            
+            envarSolicitud(metodo, parametros);
         }
     }
+    
 
 
     const envarSolicitud = async(metodo,parametros) => {
@@ -171,12 +186,12 @@ const CrearMovimiento = () => {
         <div className='row mt-3'>
                 <div className='col-md-12 offset-md-12'>
                     <div className='col-md-3 offset-md-3 d-grid mx-auto'>
-                        <button onClick={redireccionarACrearMovimiento} className='btn btn-dark' data-bs-toggle='modal' data-bs-target='#modalMovimiento'>
+                        <button onClick={redireccionarACrearMovimiento} className='btn btn-dark'>
                             <i className='fa-solid fa-circle-plus'></i> Crear Cuenta
                         </button>
                     </div> 
                     <div className='col-md-3 offset-md-3  d-grid mx-auto'>
-                        <button onClick={redireccionarACrearMovimiento}  className='btn btn-dark' data-bs-toggle='modal' data-bs-target='#modalMovimiento'>
+                        <button onClick={()=>openModalMovimiento(1)}  className='btn btn-dark' data-bs-toggle='modal' data-bs-target='#modalMovimiento'>
                             <i className='fa-solid fa-circle-plus'></i> crear Movimiento
                         </button>
                     </div>
@@ -197,41 +212,39 @@ const CrearMovimiento = () => {
                         <table className='table table-bordered'>
                             <thead>
                             
-                            <tr><th>#</th><th>tipo Cuenta</th><th>descripcion </th><th>tasa de interesa </th><th>dcto</th><th>total</th><th>valor</th><th>Tipo Transaccion</th><th>Metodo Pago</th><th>valor</th><th>fecha</th><th>tipo pago</th></tr>
+                            <tr><th>#</th><th>tipo Cuenta</th><th>descripcion </th><th>tasa de interesa </th><th>dcto</th><th>valor</th><th>total</th><th>Tipo Transaccion</th><th>valor</th><th>fecha</th><th>tipo pago</th></tr>
                             </thead>
                             <tbody className='table-group-divider'>
                               
-                              
-                               { movimientos.map((movimiento,i)=>(
-                                <tr key={movimientos.id}>
-                                    <td>{(i+1)}</td>
-                                    <td>{(movimiento.tipo)}</td>
-                                    <td>{(movimiento.descripcion)}</td>
-                                    <td>{(movimiento.tasaInteres)}</td>
-                                    <td>{(movimiento.dcto)}</td>
-                                    <td>${new Intl.NumberFormat('es-co').format(movimiento.valor) }</td>
-                                    <td>{(movimiento.total)}</td>
-                                    <td>{(movimiento.tipoTransaccion)}</td>
-                                    <td>{(movimiento.metodoPago)}</td>
-                                    <td>{(movimiento.valor)}</td>
-                                    <td>{(movimiento.fecha)}</td>
-                                    <td>{(movimiento.tipo_pago)}</td>
-                                    
-                                    <td>
-                                    <button onClick={() => openModal(2,movimiento.id,movimiento.descripcion,movimiento.tasaInteres,movimiento.dcto,movimiento.valor,movimiento.total,movimiento.fecha,movimiento.tipoTransaccion,movimiento.metodoPago,movimiento.tipo_pago)}
-                                                 className='btn btn-warning' data-bs-toggle='modal' data-bs-target='#modalMovimiento'>
-                                                <i className='fa-solid fa-edit'></i>
-                                            </button>
+                            {movimientos && movimientos.map((movimiento,i)=>(
+    <tr key={movimiento.id}>
+        <td>{(i+1)}</td>
+        <td>{(movimiento.tipo)}</td>
+        <td>{(movimiento.descripcion)}</td>
+        <td>{(movimiento.tasaInteres)}</td>
+        <td>{(movimiento.dcto)}</td>
+        <td>${new Intl.NumberFormat('es-co').format(movimiento.valor) }</td>
+        <td>{(movimiento.total)}</td>
+        <td>{(movimiento.tipoTransaccion)}</td>
+        <td>{(movimiento.valor)}</td>
+        <td>{(movimiento.fecha)}</td>
+        <td>{(movimiento.tipo_pago)}</td>
+        
+        <td>
+            <button onClick={() => openModalMovimiento(2,movimiento.id,movimiento.descripcion,movimiento.tasaInteres,movimiento.dcto,movimiento.valor,movimiento.total,movimiento.fecha,movimiento.tipoTransaccion,movimiento.tipo_pago)}
+                className='btn btn-warning' data-bs-toggle='modal' data-bs-target='#modalMovimiento'>
+                <i className='fa-solid fa-edit'></i>
+            </button>
 
-                                        &nbsp;
-                                        <button className='btn btn-danger'>
-                                        <i className='fa-solid fa-trash'></i>
-                                        </button>
-                                    </td>
-                                    
-                                </tr>
+            &nbsp;
+            <button className='btn btn-danger'>
+                <i className='fa-solid fa-trash'></i>
+            </button>
+        </td>
+        
+    </tr>
+))}
 
-                                ))}
 
                             
 
@@ -262,7 +275,7 @@ const CrearMovimiento = () => {
                         </div>
                         <div className='input-group mb-3'>
                             <span className='input-group-text'><i className='fa-solid fa-comment'></i></span>
-                            <input type='date' id='valor' className='form-control' placeholder='valor' value={valor}
+                            <input type='text' id='valor' className='form-control' placeholder='valor' value={valor}
                             onChange={(e)=> setValor(e.target.value)}></input>
                         </div>
                         <div className='input-group mb-3'>
@@ -272,9 +285,31 @@ const CrearMovimiento = () => {
                         </div>
                         <div className='input-group mb-3'>
                             <span className='input-group-text'><i className='fa-solid fa-dollar-sign'></i></span>
-                            <input type='double' id='fecha' className='form-control'  value={fecha}
+                            <input type='date' id='fecha' className='form-control'  value={fecha}
                             onChange={(e)=> setFecha(e.target.value)}></input>
                         </div>
+                        
+
+
+                        <div className="input-group mb-3">
+                    <span className="input-group-text"><i className="fa-solid fa-users"></i></span>
+                    <select
+                        id="cuentas"
+                        className="form-select"
+                        value={selectedCuenta}
+                        onChange={(e) => setCuentas(e.target.value)}
+                    >
+                        <option value="">Selecciona un cuenta</option>
+                        {/* Mapear la lista de usuarios y generar las opciones del select */}
+                        {cuentas.map((cuenta) => (
+                            <option key={cuenta.id} value={cuenta.id}>
+                                {cuenta.titular}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+
                         <div className='input-group mb-3'>
                             <span className='input-group-text'><i className='fa-solid fa-dollar-sign'></i></span>
                             <input type='double' id='tipoTransaccion' className='form-control' placeholder='tipo Transaccion' value={tipoTransaccion}
@@ -282,23 +317,19 @@ const CrearMovimiento = () => {
                         </div>
                         <div className='input-group mb-3'>
                             <span className='input-group-text'><i className='fa-solid fa-dollar-sign'></i></span>
-                            <input type='double' id='tasaInteres' className='form-control' placeholder='tasa de interes' value={tasaInteres}
+                            <input type='number' id='tasaInteres' className='form-control' placeholder='tasa de interes' value={tasaInteres}
                             onChange={(e)=> setTasaInteres(e.target.value)}></input>
                         </div>
+                    
                         <div className='input-group mb-3'>
                             <span className='input-group-text'><i className='fa-solid fa-dollar-sign'></i></span>
-                            <input type='double' id='metodoPago' className='form-control' placeholder='metodo pago' value={metodoPago}
-                            onChange={(e)=> setMetodoPago(e.target.value)}></input>
-                        </div>
-                        <div className='input-group mb-3'>
-                            <span className='input-group-text'><i className='fa-solid fa-dollar-sign'></i></span>
-                            <input type='double' id='tipo_pago' className='form-control' placeholder='tasa de tipo de pago' value={tipo_pago}
+                            <input type='double' id='tipo_pago' className='form-control' placeholder=' tipo de pago' value={tipo_pago}
                             onChange={(e)=> setTipoPago(e.target.value)}></input>
                         </div>
                        
 
                         <div className='d-grid col-6 mx-auto'>
-                            <button onClick={() => validar()} className='btn btn-success'>
+                            <button onClick={() => validarMovimientos()} className='btn btn-success'>
                                 <i className='fa-solid fa-floppy-disk'></i> Guardar
                             </button>
                         </div>
