@@ -236,10 +236,7 @@ const CrearMovimiento = () => {
                 <i className='fa-solid fa-edit'></i>
             </button>
 
-            &nbsp;
-            <button className='btn btn-danger'>
-                <i className='fa-solid fa-trash'></i>
-            </button>
+          
         </td>
         
     </tr>
